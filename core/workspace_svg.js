@@ -946,19 +946,18 @@ Blockly.WorkspaceSvg.prototype.zoomToFit = function() {
   if (blocksWidth == 0) {
     return; // prevents zooming to the infinity
   }
-  var maxBlocksSize = Math.max(blocksWidth, blocksHeight);
-  var reSizeDirection = (maxBlocksSize == workspaceWidth) ? 'x' : 'y';
-  var minWorkspaceSize = (reSizeDirection == 'x') ? workspaceWidth : workspaceHeight;
-  this.zoomReset({stopPropagation: function() {} });
-  var ratio = minWorkspaceSize / maxBlocksSize;
+  var ratioX = workspaceWidth / blocksWidth;
+  var ratioY = workspaceHeight / blocksHeight;
+  var ratio = Math.min(ratioX, ratioY);
   var speed = this.options.zoomOptions.scaleSpeed;
-  var numZooms = Math.abs(Math.round(Math.log(ratio) / Math.log(speed)));
-  var type = (ratio < 1) ? -1 : 1;
-  var metrics = this.getMetrics();
-  var centerX = metrics.viewWidth / 2;
-  var centerY = metrics.viewHeight / 2;
-  for (var i = 0; i < numZooms; i++) {
-    this.zoom(centerX, centerY, type)
+  var numZooms = Math.floor(Math.log(ratio) / Math.log(speed));
+  this.scale = Math.pow(speed, numZooms);
+  this.updateGridPattern_();
+  this.scrollbar.resize();
+  Blockly.hideChaff(false);
+  if (this.flyout_) {
+    // No toolbox, resize flyout.
+    this.flyout_.reflow();
   }
   // Center the workspace.
   var metrics = this.getMetrics();
